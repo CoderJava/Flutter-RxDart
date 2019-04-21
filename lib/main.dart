@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rxdart_app/counter_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 
 void main() => runApp(App());
@@ -12,7 +13,14 @@ class App extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  CounterBloc _counterBloc = CounterBloc(0);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,48 +28,44 @@ class HomeScreen extends StatelessWidget {
         title: Text("Flutter RxDart"),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              RaisedButton(
-                child: Text("Publish Subject"),
-                onPressed: () {
-                  PublishSubject<int> subject = PublishSubject<int>();
-                  subject.stream.listen((value) => print("pertama $value"));
-                  subject.add(1);
-                  subject.add(2);
-
-                  subject.stream.listen((value) => print("kedua $value"));
-                  subject.add(3);
-                },
-              ),
-              RaisedButton(
-                child: Text("Behavior Subject"),
-                onPressed: () {
-                  BehaviorSubject<int> subject = BehaviorSubject<int>();
-                  subject.stream.listen((value) => print("pertama $value"));
-                  subject.add(1);
-                  subject.add(2);
-                  subject.add(3);
-                  subject.stream.listen((value) => print("kedua $value"));
-                },
-              ),
-              RaisedButton(
-                child: Text("Replay Subject"),
-                onPressed: () {
-                  ReplaySubject<int> subject = ReplaySubject();
-                  subject.add(1);
-                  subject.add(2);
-                  subject.add(3);
-                  subject.stream.listen((value) => print(value));
-                },
-              ),
-            ],
+        child: Center(
+          child: StreamBuilder<int>(
+            stream: _counterBloc.counterObservable,
+            builder: (context, snapshot) {
+              return Text(
+                "${snapshot.data}",
+                style: Theme.of(context).textTheme.display2,
+              );
+            }
           ),
         ),
       ),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          FloatingActionButton(
+            child: Icon(Icons.add),
+            onPressed: () {
+              _counterBloc.increment();
+            },
+          ),
+          SizedBox(height: 16.0,),
+          FloatingActionButton(
+            child: Icon(Icons.remove),
+            onPressed: () {
+              setState(() {
+                _counterBloc.decrement();
+              });
+            },
+          )
+        ],
+      ),
     );
+  }
+
+  @override
+  void dispose() {
+    _counterBloc.dispose();
+    super.dispose();
   }
 }
