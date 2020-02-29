@@ -53,9 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
           FloatingActionButton(
             child: Icon(Icons.remove),
             onPressed: () {
-              setState(() {
-                _counterBloc.decrement();
-              });
+              _counterBloc.decrement();
             },
           ),
         ],
